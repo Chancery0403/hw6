@@ -8,7 +8,7 @@ Website: github.com/sophiaas
 
 import numpy as np
 from abc import ABC, abstractmethod
-import mathtrain ffnn.py
+import math #train ffnn.py
 
 
 def initialize_scheduler(name, lr, decay=None, stage_length=None, staircase=None):

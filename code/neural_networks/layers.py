@@ -212,7 +212,9 @@ class FullyConnected(Layer):
         dLdZ = self.activation.backward(Z, dLdY)
         
         dLdW = np.matmul(X.transpose(), dLdZ)
-        dLdb = np.matmul(np.ones(X.transpose().shape), dLdZ)
+        
+        dLdb = np.matmul(np.ones((1, X.transpose().shape[1])), dLdZ)
+        
         dLdX = np.matmul(dLdZ, self.parameters["W"].transpose())
 
         dX = dLdX
@@ -220,6 +222,7 @@ class FullyConnected(Layer):
         # store the gradients in `self.gradients`
         # the gradient for self.parameters["W"] should be stored in
         # self.gradients["W"], etc.
+        
         self.gradients["W"] = dLdW
         self.gradients["b"] = dLdb
 
