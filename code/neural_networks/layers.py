@@ -402,21 +402,33 @@ class Conv2D(Layer):
         n_examples, in_rows, in_cols, in_channels = X.shape
         kernel_shape = (kernel_height, kernel_width)
 
+        #Got help from TA during office hours for einsum bug and stride bug
+
         ### BEGIN YOUR CODE ###
 
         # implement a convolutional forward pass
-        out.shape = (X.shape[0], X.shape[0] - kernel_shape[0] + 1, X.shape[1] - kernel_shape[1] + 1, out_channels)
-        for i in range(Z.shape[1]):
-            for j in range(Z.shape[2]):
+        #out_rows = np.floor_divide((X.shape[0] + (2*self.pad[0]) - kernel_height), self.stride) + 1
+        out_rows = int((X.shape[1] + (2*self.pad[0]) - kernel_height) / self.stride) + 1
+        #out_cols = np.floor_divide((X.shape[1] + (2*self.pad[1]) - kernel_width), self.stride) + 1
+        out_cols = int((X.shape[2] + (2*self.pad[1]) - kernel_width) / self.stride) + 1
+        padded_X = np.pad(X, pad_width=((0,0), (self.pad[0], self.pad[0]), (self.pad[1], self.pad[1]), (0,0)))
+        out_shape = (n_examples, out_rows, out_cols, out_channels)
+        out = np.zeros(out_shape)
+        for i in range(out_rows):
+            for j in range(out_cols):
                 #top left corner of this iterations window is (i, j)
-                X_rows = X[:][i:i+kernel_shape[0]]
-                X_window = X_rows[2]
+                X_window = padded_X[:, i*self.stride:i*self.stride + kernel_height, j*self.stride:j*self.stride + kernel_width, :] #[i:i+kernel_height] (b,h,w,c) [:, i,j,:]
+                out[:, i, j, :] = np.einsum('bijc,ijcl->bl', X_window, W) + b
 
 
         # cache any values required for backprop
+       
+        self.cache["Z"] = out
+        self.cache["X"] = X
+
+        out = self.activation(out)
 
         ### END YOUR CODE ###
-
         return out
 
     def backward(self, dLdY: np.ndarray) -> np.ndarray:
