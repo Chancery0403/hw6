@@ -285,6 +285,8 @@ class BatchNorm1D(Layer):
         """
         ### BEGIN YOUR CODE ###
 
+        #got debugging help from TA Richard
+
         # implement a batch norm forward pass
         h = X
         alpha = self.momentum
@@ -406,10 +408,10 @@ class Conv2D(Layer):
 
         ### BEGIN YOUR CODE ###
 
+        #got debugging help from TA Margarita
+
         # implement a convolutional forward pass
-        #out_rows = np.floor_divide((X.shape[0] + (2*self.pad[0]) - kernel_height), self.stride) + 1
-        out_rows = int((X.shape[1] + (2*self.pad[0]) - kernel_height) / self.stride) + 1
-        #out_cols = np.floor_divide((X.shape[1] + (2*self.pad[1]) - kernel_width), self.stride) + 1
+        out_rows = int((X.shape[1] + (2*self.pad[0]) - kernel_height) / self.stride) + 1 #dimension formula from discussion 11
         out_cols = int((X.shape[2] + (2*self.pad[1]) - kernel_width) / self.stride) + 1
         padded_X = np.pad(X, pad_width=((0,0), (self.pad[0], self.pad[0]), (self.pad[1], self.pad[1]), (0,0)))
         out_shape = (n_examples, out_rows, out_cols, out_channels)
@@ -417,7 +419,7 @@ class Conv2D(Layer):
         for i in range(out_rows):
             for j in range(out_cols):
                 #top left corner of this iterations window is (i, j)
-                X_window = padded_X[:, i*self.stride:i*self.stride + kernel_height, j*self.stride:j*self.stride + kernel_width, :] #[i:i+kernel_height] (b,h,w,c) [:, i,j,:]
+                X_window = padded_X[:, i*self.stride:i*self.stride + kernel_height, j*self.stride:j*self.stride + kernel_width, :]
                 out[:, i, j, :] = np.einsum('bijc,ijcl->bl', X_window, W) + b
 
 
@@ -517,9 +519,27 @@ class Pool2D(Layer):
         ### BEGIN YOUR CODE ###
 
         # implement the forward pass
+        kernel_height, kernel_width = self.kernel_shape[0], self.kernel_shape[1]
+        out_channels = X.shape[3]
+        n_examples = X.shape[0]
+        xpool_rows = int((X.shape[1] + (2*self.pad[0]) - kernel_height) / self.stride) + 1 #dimension formula from discussion 11
+        xpool_cols = int((X.shape[2] + (2*self.pad[1]) - kernel_width) / self.stride) + 1
+        padded_X = np.pad(X, pad_width=((0,0), (self.pad[0], self.pad[0]), (self.pad[1], self.pad[1]), (0,0)))
+        xpool_shape = (n_examples, xpool_rows, xpool_cols, out_channels)
+        X_pool = np.zeros(xpool_shape)
+
+        for i in range(xpool_rows):
+            for j in range(xpool_cols):
+                #top left corner of this iterations window is (i, j)
+                X_window = padded_X[:, i*self.stride:i*self.stride + kernel_height, j*self.stride:j*self.stride + kernel_width, :]
+                X_pool[:, i, j, :] = self.pool_fn(X_window, axis=(1,2))
 
         # cache any values required for backprop
-
+        self.cache["out_rows"] = xpool_rows
+        self.cache["out_cols"] = xpool_cols
+        self.cache["X_pad"] = padded_X
+        #self.cache["p"] = 
+        self.cache["pool_shape"] = X_pool.shape
         ### END YOUR CODE ###
 
         return X_pool
