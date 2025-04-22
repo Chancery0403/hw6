@@ -405,6 +405,13 @@ class Conv2D(Layer):
         ### BEGIN YOUR CODE ###
 
         # implement a convolutional forward pass
+        out.shape = (X.shape[0], X.shape[0] - kernel_shape[0] + 1, X.shape[1] - kernel_shape[1] + 1, out_channels)
+        for i in range(Z.shape[1]):
+            for j in range(Z.shape[2]):
+                #top left corner of this iterations window is (i, j)
+                X_rows = X[:][i:i+kernel_shape[0]]
+                X_window = X_rows[2]
+
 
         # cache any values required for backprop
 

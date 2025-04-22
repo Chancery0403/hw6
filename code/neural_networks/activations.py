@@ -222,12 +222,15 @@ class SoftMax(Activation):
         """
         ### YOUR CODE HERE ###
         fz = np.zeros(Z.shape)
+        
         for i in range(len(Z)):
             #each elem is row vector a with elements from 1 through k
+
             row = Z[i]
-            exponential_row_sum = np.sum(np.exp(row))
-            fz[i] = np.exp(row) / exponential_row_sum
-        self.cache["fz"] = fz
+            row_max = max(row)
+            exponential_row_sum = np.sum(np.exp(row-row_max))
+            fz[i] = np.exp(row-row_max) / exponential_row_sum
+        #self.cache["fizz"] = fz
         return fz
 
     def backward(self, Z: np.ndarray, dY: np.ndarray) -> np.ndarray:
@@ -250,7 +253,8 @@ class SoftMax(Activation):
         
         gradient = np.zeros(dY.shape)
         #for each jacobian we do a dot product
-        yhat = self.cache["fz"]
+        yhat = self.forward(Z)
+        #yhat = self.cache["fizz"]
         for i in range(len(Z)):
             yi = yhat[i]           
             dYda = np.outer(-np.transpose(yi), yi)
