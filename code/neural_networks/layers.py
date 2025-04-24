@@ -494,6 +494,7 @@ class Pool2D(Layer):
             "out_rows": [],
             "out_cols": [],
             "X_pad": [],
+            "X":[],
             "p": [],
             "pool_shape": [],
         }
@@ -517,6 +518,7 @@ class Pool2D(Layer):
         pooled array of shape (batch_size, out_rows, out_cols, channels)
         """
         ### BEGIN YOUR CODE ###
+        #Got help for using pool function with correct axis from TA James
 
         # implement the forward pass
         kernel_height, kernel_width = self.kernel_shape[0], self.kernel_shape[1]
@@ -539,6 +541,7 @@ class Pool2D(Layer):
         self.cache["out_cols"] = xpool_cols
         self.cache["X_pad"] = padded_X
         #self.cache["p"] = 
+        self.cache["X"] = X
         self.cache["pool_shape"] = X_pool.shape
         ### END YOUR CODE ###
 
@@ -558,12 +561,37 @@ class Pool2D(Layer):
         shape (batch_size, in_rows, in_cols, channels)
         """
         ### BEGIN YOUR CODE ###
+        #got help on this from TA's Richard, James, and Bill during Office Hours
 
         # perform a backward pass
+        kernel_height, kernel_width = self.kernel_shape[0], self.kernel_shape[1]
+        gradX = np.zeros_like(self.cache["X_pad"])
+        #print(self.kernel_shape)
+        #print(self.mode)
+        # print("row index")
+        # print(self.cache["X_pad"].shape[1])
+        for i in range(self.cache["out_rows"]):
+            for j in range(self.cache["out_cols"]):
+                #window_index = (:, i*self.stride:i*self.stride + kernel_height, j*self.stride:j*self.stride + kernel_width, :)
+                X_window = self.cache["X_pad"][:, i*self.stride:i*self.stride + kernel_height, j*self.stride:j*self.stride + kernel_width, :]
+                if self.mode == "max":
+                    max_val = np.max(X_window, axis=(1,2), keepdims=True)
+                    mask = X_window == max_val
+                    gradX[:, i*self.stride:i*self.stride + kernel_height, j*self.stride:j*self.stride + kernel_width, :] += dLdY[:, i:i+1, j:j+1, :] * mask
+                if self.mode == "average":
+                    gradX[:, i*self.stride:i*self.stride + kernel_height, j*self.stride:j*self.stride + kernel_width, :] += dLdY[:, i:i+1, j:j+1, :] / (kernel_height * kernel_width)
+                    
+       
+                    
+            
 
+        gradX = gradX[:, self.pad[0]:self.cache["X"].shape[1]+self.pad[0], self.pad[1]:self.cache["X"].shape[2]+self.pad[1], :]
         ### END YOUR CODE ###
 
         return gradX
+
+
+        
 
 class Flatten(Layer):
     """Flatten the input array."""
