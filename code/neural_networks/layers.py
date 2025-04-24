@@ -584,7 +584,7 @@ class Pool2D(Layer):
        
                     
             
-
+        #need to unpad because you initiallly defined gradX in the shape of padded X but you iterated through unpadded X
         gradX = gradX[:, self.pad[0]:self.cache["X"].shape[1]+self.pad[0], self.pad[1]:self.cache["X"].shape[2]+self.pad[1], :]
         ### END YOUR CODE ###
 
